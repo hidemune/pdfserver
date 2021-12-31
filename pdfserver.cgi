@@ -111,6 +111,11 @@ try:
         lockf = pathlib.Path(lf)
         if not lockf.exists():
             break
+        dt = datetime.datetime.fromtimestamp(os.path.getctime(lf))
+        dt2 = dt + datetime.timedelta(minutes=2)
+        if dt2 < datetime.datetime.now():
+            if lockf.exists():
+                lockf.unlink()
     lockf = pathlib.Path(lf)
     lockf.touch()
     ods = ezodf.opendoc(templatepath + '/' + template)
@@ -137,11 +142,13 @@ try:
         print ("Content-Type: text/html")
         print ("")
         print(str(ex))
-        lockf.unlink()
+        if lockf.exists():
+            lockf.unlink()
     sys.stdout.buffer.flush()
     sys.stdin.buffer.flush()
     sys.stderr.buffer.flush()
-    #lockf.unlink()
+    if lockf.exists():
+        lockf.unlink()
     #raise TestError('Test03')
     with open(os.path.abspath(datapath + '/' + fname + '.pdf'), 'rb') as f:
         sys.stdout.buffer.write(b"Content-Type: application/pdf;\nContent-Disposition: inline; filename=Generated.pdf\n\n")
