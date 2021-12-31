@@ -11,5 +11,7 @@ pip3 install ezodf
 - http://192.168.0.101/cgi-bin/templateupload.cgi
 - http://192.168.0.101/cgi-bin/pdfserver.cgi
 
+# 以下でアクセス（Global）
+
 - http://hidemune.mydns.jp/cgi-bin/templateupload.cgi
 - http://hidemune.mydns.jp/cgi-bin/pdfserver.cgi

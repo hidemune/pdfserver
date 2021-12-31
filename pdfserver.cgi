@@ -88,6 +88,8 @@ class TestError(Exception):
     """XBRLの解析中にエラーが発生したことを知らせる例外クラス"""
     pass
 
+import pathlib
+
 try:
     import uuid
     u1 = str(uuid.uuid1())
@@ -100,17 +102,22 @@ try:
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
     sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
     
-    if ( os.environ['REQUEST_METHOD'] == "GET" ):
+    #if ( os.environ['REQUEST_METHOD'] == "GET" ):
+    if form.getvalue('data','') == '':
         print( html % (data,) )
         sys.exit(0)
+    lf = templatepath + '/' + template + '.lock'
+    while True:
+        lockf = pathlib.Path(lf)
+        if not lockf.exists():
+            break
+    lockf = pathlib.Path(lf)
+    lockf.touch()
     ods = ezodf.opendoc(templatepath + '/' + template)
-    
     sheet = ods.sheets[0]
     #sheet = ods.sheets['Sheet1']
     #sheet.append_columns(3)
-    
     lines = data.split('\n')
-    
     for r,line in enumerate(lines):
         if line.strip() == "":
            break
@@ -120,19 +127,21 @@ try:
                 sheet.append_columns(1)
             sheet.append_rows(1)
             sheet[getCellAddress(r,c)].set_value(itm.strip())
-    
+    #sheet.reset(size=(50, 10))
     #subprocess.run("echo 'test01'", shell=True)
     ods.saveas(datapath + '/' + fname+'.ods')
     #raise TestError('Test02')
     try:
-        res = subprocess.run("sudo -u user libreoffice --headless --nologo --nofirststartwizard --convert-to pdf --outdir " + datapath + " " + datapath + "/" + fname + ".ods > /dev/null 2>&1", shell=True)
+        res = subprocess.call("sudo -u user libreoffice --headless --nologo --nofirststartwizard --convert-to pdf --outdir " + datapath + " " + datapath + "/" + fname + ".ods > /dev/null 2>&1", shell=True)
     except Exception as ex2:
         print ("Content-Type: text/html")
         print ("")
-        print(str(ex)) 
+        print(str(ex))
+        lockf.unlink()
     sys.stdout.buffer.flush()
     sys.stdin.buffer.flush()
     sys.stderr.buffer.flush()
+    #lockf.unlink()
     #raise TestError('Test03')
     with open(os.path.abspath(datapath + '/' + fname + '.pdf'), 'rb') as f:
         sys.stdout.buffer.write(b"Content-Type: application/pdf;\nContent-Disposition: inline; filename=Generated.pdf\n\n")
@@ -142,3 +151,6 @@ except Exception as ex:
     print ("Content-Type: text/html")
     print ("")
     print(str(ex))
+finally:
+    if lockf.exists():
+        lockf.unlink()
