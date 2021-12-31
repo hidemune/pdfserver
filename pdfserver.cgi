@@ -45,7 +45,7 @@ startrow = form.getvalue('startrow','1')
 template = form.getvalue('template','')
 
 startRow = int(startrow)
-template = template.replace('/','').replace('\\','')
+template = template.replace('/','').replace('\\','').replace(';','').replace(':','').replace(' ','')
 
 html = '''Content-Type: text/html; charset=UTF-8
 
