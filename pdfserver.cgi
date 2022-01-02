@@ -144,6 +144,7 @@ try:
         print(str(ex))
         if lockf.exists():
             lockf.unlink()
+        sys.exit(0)
     sys.stdout.buffer.flush()
     sys.stdin.buffer.flush()
     sys.stderr.buffer.flush()
